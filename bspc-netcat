@@ -1,0 +1,19 @@
+#!/bin/sh
+
+{
+	printf '\062\000\000\000'
+	printf '<?xml version="1.0"?><q3map_feedback version="1">'
+	printf '\000'
+	sleep 0.1
+	../../bspc/bspc "$@" 2>&1 | while read MSG; do
+		MSG=`echo $MSG | head -c 200`
+		DATA="<message level=\"1\">$MSG</message>"
+		COUNT=`echo -$DATA | wc -c`
+		COUNT=`printf '\\%03o' $COUNT`
+		echo "$DATA" > /dev/stderr
+		printf $COUNT
+		printf '\000\000\000'
+		printf '%s\n' "$DATA"
+		printf '\000'
+	done
+} | netcat -q 1 127.0.0.1 39000
